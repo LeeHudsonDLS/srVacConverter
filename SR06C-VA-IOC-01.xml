@@ -1,0 +1,176 @@
+<?xml version="1.0" ?>
+<components arch="vxWorks-ppc604_long">
+	<autosave.Autosave bl="False" iocName="SR06C-VA-IOC-01" ip="172.23.194.14" path="/exports/home/ops-iocs/prod/autosave" server="cs03r-cs-serv-14"/>
+	<devIocStats.devIocStatsHelper ioc="SR06C-VA-IOC-01"/>
+	<EPICS_BASE.EpicsEnvSet key="IOCSH_PS1" value="SR06C-VA-IOC-01 &amp;gt;"/>
+	<EPICS_BASE.EpicsEnvSet key="EPICS_TS_NTP_INET" value="172.23.194.5"/>
+	<EPICS_BASE.EpicsEnvSet key="EPICS_CA_MAX_ARRAY_BYTES" value="16000000"/>
+	<EPICS_BASE.StartupCommand at_end="False" command="sysClkRateSet(1000)" post_init="False"/>
+	<mrfTiming.EventReceiverPMC cardid="1"/>
+	<ipac.Hy8002 name="SR06C-VA-IOC-01.Slot4" slot="4"/>
+	<ipac.Hy8002 name="SR06C-VA-IOC-01.Slot5" slot="5"/>
+	<ipac.Hy8001 direction="0" intLevel="2" invertin="True" name="SR06C-VA-IOC-01.Slot6" scan="100" slot="6"/>
+	<Hy8401ip.Hy8401 carrier="SR06C-VA-IOC-01.Slot5" ipslot="0"/>
+	<Hy8414.Hy8414 carrier="SR06C-VA-IOC-01.Slot5" clockRate="200Hz" ipslot="2"/>
+	<DLS8515.DLS8515 carrier="SR06C-VA-IOC-01.Slot4" ipslot="0" name="SR06C-VA-IOC-01.Slot4.A"/>
+	<DLS8515.DLS8515 carrier="SR06C-VA-IOC-01.Slot4" ipslot="1" name="SR06C-VA-IOC-01.Slot4.B"/>
+	<asyn.AsynSerial name="ty_40_0" port="/ty/40/0" priority="0"/>
+	<asyn.AsynSerial name="ty_40_1" port="/ty/40/1" priority="0"/>
+	<asyn.AsynSerial name="ty_40_2" port="/ty/40/2" priority="0"/>
+	<asyn.AsynSerial name="ty_40_3" port="/ty/40/3" priority="0"/>
+	<asyn.AsynSerial name="ty_40_4" port="/ty/40/4" priority="0"/>
+	<asyn.AsynSerial name="ty_40_5" port="/ty/40/5" priority="0"/>
+	<asyn.AsynSerial name="ty_40_6" port="/ty/40/6" priority="0"/>
+	<asyn.AsynSerial name="ty_40_7" port="/ty/40/7" priority="0"/>
+	<asyn.AsynSerial name="ty_41_0" port="/ty/41/0" priority="0"/>
+	<asyn.AsynSerial name="ty_41_1" port="/ty/41/1" priority="0"/>
+	<asyn.AsynSerial name="ty_41_2" port="/ty/41/2" priority="0"/>
+	<asyn.AsynSerial name="ty_41_3" port="/ty/41/3" priority="0"/>
+	<asyn.AsynSerial name="ty_41_4" port="/ty/41/4" priority="0"/>
+	<asyn.AsynSerial name="ty_41_5" port="/ty/41/5" priority="0"/>
+	<asyn.AsynSerial name="ty_41_6" port="/ty/41/6" priority="0"/>
+	<asyn.AsynSerial name="ty_41_7" port="/ty/41/7" priority="0"/>
+	<FINS.FINSHostlink asyn_port="ty_41_0" name="vlvcc_fins_port1"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.A" channel="0" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.A" channel="1" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.A" channel="2" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.A" channel="3" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.A" channel="4" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.A" channel="5" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.A" channel="6" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.A" channel="7" parity="E"/>
+	<DLS8515.DLS8515channel baud="57600" card="SR06C-VA-IOC-01.Slot4.B" channel="0" data="7" parity="E" stop="2"/>
+	<DLS8515.DLS8515channel baud="38400" card="SR06C-VA-IOC-01.Slot4.B" channel="1"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.B" channel="2" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.B" channel="3" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.B" channel="4" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.B" channel="5" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.B" channel="6" parity="E"/>
+	<DLS8515.DLS8515channel card="SR06C-VA-IOC-01.Slot4.B" channel="7" parity="E"/>
+	<mks937a.mks937a name="GCTLR_S_01" device="SR06S-VA-GCTLR-01" port="ty_40_0" />
+	<mks937a.mks937a name="GCTLR_A_01" device="SR06A-VA-GCTLR-01" port="ty_40_1" />
+	<mks937a.mks937a name="GCTLR_A_02" device="SR06A-VA-GCTLR-02" port="ty_41_2" />
+	<mks937a.mks937a name="GCTLR_A_03" device="SR06A-VA-GCTLR-03" port="ty_41_3" />
+	<mks937a.mks937aGauge name="GAUGE_S_01" dom="SR06S" id="01" c="50" s="0" />
+	<mks937a.mks937aGauge name="GAUGE_S_02" dom="SR06S" id="02" c="50" s="1" />
+	<mks937a.mks937aGauge name="GAUGE_A_01" dom="SR06A" id="01" c="50" s="2" />
+	<mks937a.mks937aGauge name="GAUGE_A_02" dom="SR06A" id="02" c="50" s="3" />
+	<mks937a.mks937aGauge name="GAUGE_A_03" dom="SR06A" id="03" c="50" s="5" />
+	<mks937a.mks937aGauge name="GAUGE_A_04" dom="SR06A" id="04" c="50" s="7" />
+	<mks937a.mks937aGauge name="GAUGE_A_31" dom="SR06A" id="31" c="50" s="6" />
+	<Hy8401ip.auto_Hy8401ip name="SR06C-VA-VDC-01:V" c="50" s="4" />
+	<mks937a.mks937aImg device="SR06S-VA-IMG-01" GCTLR="GCTLR_S_01" channel="1" ilk_write_access_pv="SR06S-VA-GAUGE-01:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aImg device="SR06S-VA-IMG-02" GCTLR="GCTLR_S_01" channel="2" ilk_write_access_pv="SR06S-VA-GAUGE-02:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aImg device="SR06A-VA-IMG-01" GCTLR="GCTLR_A_01" channel="1" ilk_write_access_pv="SR06A-VA-GAUGE-01:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aImg device="SR06A-VA-IMG-02" GCTLR="GCTLR_A_01" channel="2" ilk_write_access_pv="SR06A-VA-GAUGE-02:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aImg device="SR06A-VA-IMG-03" GCTLR="GCTLR_A_02" channel="2" ilk_write_access_pv="SR06A-VA-GAUGE-03:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aImg device="SR06A-VA-IMG-04" GCTLR="GCTLR_A_03" channel="2" ilk_write_access_pv="SR06A-VA-GAUGE-04:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aImg device="SR06A-VA-IMG-31" GCTLR="GCTLR_A_03" channel="1" ilk_write_access_pv="SR06A-VA-GAUGE-31:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aPirg device="SR06S-VA-PIRG-01" GCTLR="GCTLR_S_01" channel="4" ilk_write_access_pv="SR06S-VA-GAUGE-01:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aPirg device="SR06S-VA-PIRG-02" GCTLR="GCTLR_S_01" channel="5" ilk_write_access_pv="SR06S-VA-GAUGE-02:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aPirg device="SR06A-VA-PIRG-01" GCTLR="GCTLR_A_01" channel="4" ilk_write_access_pv="SR06A-VA-GAUGE-01:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aPirg device="SR06A-VA-PIRG-02" GCTLR="GCTLR_A_01" channel="5" ilk_write_access_pv="SR06A-VA-GAUGE-02:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aPirg device="SR06A-VA-PIRG-03" GCTLR="GCTLR_A_02" channel="5" ilk_write_access_pv="SR06A-VA-GAUGE-03:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aPirg device="SR06A-VA-PIRG-04" GCTLR="GCTLR_A_03" channel="5" ilk_write_access_pv="SR06A-VA-GAUGE-04:ILKSETSP:NOWRITE" />
+	<mks937a.mks937aPirg device="SR06A-VA-PIRG-31" GCTLR="GCTLR_A_03" channel="4" ilk_write_access_pv="SR06A-VA-GAUGE-31:ILKSETSP:NOWRITE" />
+	<digitelMpc.digitelMpc name="MPC_S_01" device="SR06S-VA-MPC-01" port="ty_40_2" unit="01" />
+	<digitelMpc.digitelMpc name="MPC_A_09" device="SR06A-VA-MPC-09" port="ty_40_3" unit="01" />
+	<digitelMpc.digitelMpc name="MPC_A_01" device="SR06A-VA-MPC-01" port="ty_40_4" unit="01" />
+	<digitelMpc.digitelMpc name="MPC_A_02" device="SR06A-VA-MPC-02" port="ty_40_5" unit="01" />
+	<digitelMpc.digitelMpc name="MPC_A_03" device="SR06A-VA-MPC-03" port="ty_41_4" unit="01" />
+	<digitelMpc.digitelMpc name="MPC_A_04" device="SR06A-VA-MPC-04" port="ty_41_5" unit="01" />
+	<digitelMpc.digitelMpc name="MPC_A_05" device="SR06A-VA-MPC-05" port="ty_41_6" unit="01" />
+	<digitelMpc.digitelMpc name="MPC_A_06" device="SR06A-VA-MPC-06" port="ty_41_7" unit="01" />
+	<digitelMpc.digitelMpc name="MPC_A_07" device="SR06A-VA-MPC-07" port="ty_40_6" unit="01" />
+	<digitelMpc.digitelMpc name="MPC_A_08" device="SR06A-VA-MPC-08" port="ty_40_7" unit="01" />
+	<digitelMpc.digitelMpcIonp device="SR06S-VA-IONP-01" MPC="MPC_S_01" pump="1" size="300" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06S-VA-IONP-03" MPC="MPC_S_01" pump="2" size="300" sp1on="1.0E-8" sp1off="2.0E-8" sp2on="1.0E-8" sp2off="2.0E-8" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-31" MPC="MPC_A_09" pump="1" size="20" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-01" MPC="MPC_A_01" pump="1" size="300" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-02" MPC="MPC_A_01" pump="2" size="300" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-03" MPC="MPC_A_02" pump="1" size="300" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-04" MPC="MPC_A_02" pump="2" size="500" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-05" MPC="MPC_A_03" pump="1" size="500" sp1on="1.0E-8" sp1off="2.0E-8" sp2on="1.0E-8" sp2off="2.0E-8" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-06" MPC="MPC_A_03" pump="2" size="500" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-07" MPC="MPC_A_04" pump="1" size="300" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-08" MPC="MPC_A_04" pump="2" size="300" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-09" MPC="MPC_A_05" pump="1" size="300" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-10" MPC="MPC_A_06" pump="1" size="300" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-11" MPC="MPC_A_05" pump="2" size="500" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-12" MPC="MPC_A_06" pump="2" size="500" sp1on="1.0E-8" sp1off="2.0E-8" sp2on="1.0E-8" sp2off="2.0E-8" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-13" MPC="MPC_A_07" pump="1" size="500" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-14" MPC="MPC_A_07" pump="2" size="300" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-15" MPC="MPC_A_08" pump="1" size="300" sp1on="1.0E-10" sp1off="1.0E-4" sp2on="1.0E-10" sp2off="1.0E-4" />
+	<digitelMpc.digitelMpcIonp device="SR06A-VA-IONP-16" MPC="MPC_A_08" pump="2" size="300" sp1on="1.0E-8" sp1off="2.0E-8" sp2on="1.0E-8" sp2off="2.0E-8" />
+	<digitelMpc.digitelMpcTsp device="SR06A-VA-TSP-01" port="ty_41_4" unit="01" ctlsrc="1" />
+	<digitelMpc.digitelMpcTsp device="SR06A-VA-TSP-02" port="ty_41_7" unit="01" ctlsrc="2" />
+	<dlsPLC.read100 device="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" century="0" />
+	<dlsPLC.read100 device="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" century="1" />
+	<dlsPLC.read100 device="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" century="2" />
+	<dlsPLC.read100 device="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" century="3" />
+	<dlsPLC.read100 device="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" century="4" />
+	<dlsPLC.read100 device="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" century="5" />
+	<dlsPLC.read100 device="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" century="6" />
+	<dlsPLC.vacValveDebounce device="SR06A-VA-VALVE-01" vlvcc="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" addr="10" ilk0="Air Pressure" ilk1="SR06 Intl/Run Vac" ilk2="SR05 Intl/Run Vac" ilk3="SR07 Intl/Run Vac" ilk4="SR06S IMG2/A IMG1" ilk5="SR06A IMG2/A IMG3" ilk6="SR06A IMG3/A IMG4" ilk7="" ilk8="" ilk9="" ilk10="" ilk11="Service Mode Vac" ilk12="" ilk13="" ilk14="" ilk15="Timeout" gilk0="SR06S-VA-GAUGE-01" gilk1="SR06S-VA-GAUGE-02" gilk2="SR06A-VA-GAUGE-01" gilk3="SR06A-VA-GAUGE-02" gilk4="" gilk5="SR06A-VA-GAUGE-03" gilk6="SR06A-VA-GAUGE-31" gilk7="SR06A-VA-GAUGE-04" gilk8="" gilk9="" gilk10="" gilk11="" gilk12="" gilk13="" gilk14="" gilk15="" />
+	<dlsPLC.vacValveDebounce device="SR06A-VA-VALVE-02" vlvcc="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" addr="20" ilk0="Air Pressure" ilk1="SR06 Intl/Run Vac" ilk2="" ilk3="" ilk4="SRA-IMG2 &amp; FEI-IMG1" ilk5="SR06A IMG2/A IMG21" ilk6="SR06A IMG2/A IMG3" ilk7="FE06I Intl/Run Vac" ilk8="" ilk9="V2 Open/V1 Closed" ilk10="V2 Open/V4 Closed" ilk11="Service Mode Vac" ilk12="" ilk13="" ilk14="" ilk15="Timeout" gilk0="SR06S-VA-GAUGE-01" gilk1="SR06S-VA-GAUGE-02" gilk2="SR06A-VA-GAUGE-01" gilk3="SR06A-VA-GAUGE-02" gilk4="" gilk5="SR06A-VA-GAUGE-03" gilk6="SR06A-VA-GAUGE-31" gilk7="SR06A-VA-GAUGE-04" gilk8="" gilk9="" gilk10="" gilk11="" gilk12="" gilk13="" gilk14="" gilk15="" />
+	<dlsPLC.vacValveDebounce device="SR06A-VA-VALVE-03" vlvcc="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" addr="30" ilk0="Air Pressure" ilk1="SR06 Intl/Run Vac" ilk2="" ilk3="" ilk4="SRA-IMG3 &amp; FEB-IMG1" ilk5="SR06A IMG3/A IMG31" ilk6="SR06A IMG2/A IMG3" ilk7="FE06B Intl/Run Vac" ilk8="" ilk9="V3 Open/V1 Closed" ilk10="V3 Open/V4 Closed" ilk11="Service Mode Vac" ilk12="" ilk13="" ilk14="" ilk15="Timeout" gilk0="SR06S-VA-GAUGE-01" gilk1="SR06S-VA-GAUGE-02" gilk2="SR06A-VA-GAUGE-01" gilk3="SR06A-VA-GAUGE-02" gilk4="" gilk5="SR06A-VA-GAUGE-03" gilk6="SR06A-VA-GAUGE-31" gilk7="SR06A-VA-GAUGE-04" gilk8="" gilk9="" gilk10="" gilk11="" gilk12="" gilk13="" gilk14="" gilk15="" />
+	<dlsPLC.vacValveDebounce device="SR06A-VA-VALVE-04" vlvcc="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" addr="40" ilk0="Air Pressure" ilk1="SR06 Intl/Run Vac" ilk2="SR05 Intl/Run Vac" ilk3="SR07 Intl/Run Vac" ilk4="IMG4 &amp; SR07S-IMG1" ilk5="SR06S IMG2/A IMG1" ilk6="SR06A IMG2/A IMG3" ilk7="SR06A IMG3/A IMG4" ilk8="" ilk9="" ilk10="" ilk11="Service Mode Vac" ilk12="" ilk13="" ilk14="" ilk15="Timeout" gilk0="SR06S-VA-GAUGE-01" gilk1="SR06S-VA-GAUGE-02" gilk2="SR06A-VA-GAUGE-01" gilk3="SR06A-VA-GAUGE-02" gilk4="" gilk5="SR06A-VA-GAUGE-03" gilk6="SR06A-VA-GAUGE-31" gilk7="SR06A-VA-GAUGE-04" gilk8="" gilk9="" gilk10="" gilk11="" gilk12="" gilk13="" gilk14="" gilk15="" />
+	<rga.rga device="SR06S-VA-RGA-01" port="ty_41_1" channel="1" />
+	<rga.rga device="SR06A-VA-RGA-01" port="ty_41_1" channel="2" />
+	<rga.rga device="SR06A-VA-RGA-02" port="ty_41_1" channel="3" />
+	<rga.rga device="FE06I-VA-RGA-01" port="ty_41_1" channel="4" />
+	<rga.rga device="BL06I-VA-RGA-01" port="ty_41_1" channel="5" />
+	<vacuumSpace.spaceTemplate device="SR06S-VA-SPACE-01" ionp="SR06S-VA-GIONP-01" gauge="SR06S-VA-GGAUG-01" img="SR06S-VA-GIMG-01" pirg="SR06S-VA-GPIRG-01" valve="SR06S-VA-GVALV-01" />
+	<vacuumSpace.spaceTemplate device="SR06A-VA-SPACE-01" ionp="SR06A-VA-GIONP-01" gauge="SR06A-VA-GGAUG-01" img="SR06A-VA-GIMG-01" pirg="SR06A-VA-GPIRG-01" valve="SR06A-VA-GVALV-01" />
+	<vacuumSpace.spaceTemplate device="SR06C-VA-SPACE-01" ionp="SR06C-VA-GIONP-01" gauge="SR06C-VA-GGAUG-01" img="SR06C-VA-GIMG-01" pirg="SR06C-VA-GPIRG-01" valve="SR06C-VA-GVALV-01" />
+	<digitelMpc.digitelMpcIonpGroup device="SR06S-VA-GIONP-01" delay="2" ionp1="SR06S-VA-IONP-01" ionp2="SR06S-VA-IONP-01" ionp3="SR06S-VA-IONP-01" ionp4="SR06S-VA-IONP-01" ionp5="SR06S-VA-IONP-01" ionp6="SR06S-VA-IONP-03" ionp7="SR06S-VA-IONP-03" ionp8="SR06S-VA-IONP-03" />
+	<digitelMpc.digitelMpcIonpGroup device="SR06A-VA-GIONP-02" delay="10" ionp1="SR06A-VA-IONP-01" ionp2="SR06A-VA-IONP-02" ionp3="SR06A-VA-IONP-03" ionp4="SR06A-VA-IONP-04" ionp5="SR06A-VA-IONP-05" ionp6="SR06A-VA-IONP-06" ionp7="SR06A-VA-IONP-07" ionp8="SR06A-VA-IONP-08" />
+	<digitelMpc.digitelMpcIonpGroup device="SR06A-VA-GIONP-03" delay="10" ionp1="SR06A-VA-IONP-09" ionp2="SR06A-VA-IONP-10" ionp3="SR06A-VA-IONP-11" ionp4="SR06A-VA-IONP-12" ionp5="SR06A-VA-IONP-13" ionp6="SR06A-VA-IONP-14" ionp7="SR06A-VA-IONP-15" ionp8="SR06A-VA-IONP-16" />
+	<digitelMpc.digitelMpcIonpGroup device="SR06A-VA-GIONP-01" delay="20" ionp1="SR06A-VA-GIONP-02" ionp2="SR06A-VA-GIONP-02" ionp3="SR06A-VA-GIONP-02" ionp4="SR06A-VA-GIONP-02" ionp5="SR06A-VA-GIONP-03" ionp6="SR06A-VA-GIONP-03" ionp7="SR06A-VA-GIONP-03" ionp8="SR06A-VA-IONP-31" />
+	<digitelMpc.digitelMpcIonpGroup device="SR06C-VA-GIONP-01" delay="23" ionp1="SR06A-VA-GIONP-01" ionp2="SR06A-VA-GIONP-01" ionp3="SR06A-VA-GIONP-01" ionp4="SR06A-VA-GIONP-01" ionp5="SR06A-VA-GIONP-01" ionp6="SR06A-VA-GIONP-01" ionp7="SR06A-VA-GIONP-01" ionp8="SR06S-VA-GIONP-01" />
+	<mks937a.mks937aGaugeGroup device="SR06S-VA-GGAUG-01" gauge1="SR06S-VA-GAUGE-01" gauge2="SR06S-VA-GAUGE-02" gauge3="SR06S-VA-GAUGE-01" gauge4="SR06S-VA-GAUGE-01" gauge5="SR06S-VA-GAUGE-01" gauge6="SR06S-VA-GAUGE-01" gauge7="SR06S-VA-GAUGE-01" gauge8="SR06S-VA-GAUGE-01" />
+	<mks937a.mks937aGaugeGroup device="SR06A-VA-GGAUG-01" gauge1="SR06A-VA-GAUGE-01" gauge2="SR06A-VA-GAUGE-02" gauge3="SR06A-VA-GAUGE-03" gauge4="SR06A-VA-GAUGE-04" gauge5="SR06A-VA-GAUGE-01" gauge6="SR06A-VA-GAUGE-01" gauge7="SR06A-VA-GAUGE-31" gauge8="SR06A-VA-GAUGE-31" />
+	<mks937a.mks937aGaugeGroup device="SR06C-VA-GGAUG-01" gauge1="SR06S-VA-GGAUG-01" gauge2="SR06A-VA-GGAUG-01" gauge3="SR06S-VA-GGAUG-01" gauge4="SR06S-VA-GGAUG-01" gauge5="SR06S-VA-GGAUG-01" gauge6="SR06S-VA-GGAUG-01" gauge7="SR06S-VA-GGAUG-01" gauge8="SR06S-VA-GGAUG-01" />
+	<mks937a.mks937aImgGroup device="SR06S-VA-GIMG-01" delay="0" img1="SR06S-VA-IMG-01" img2="SR06S-VA-IMG-02" img3="SR06S-VA-IMG-01" img4="SR06S-VA-IMG-01" img5="SR06S-VA-IMG-01" img6="SR06S-VA-IMG-01" img7="SR06S-VA-IMG-01" img8="SR06S-VA-IMG-01" />
+	<mks937a.mks937aImgGroup device="SR06A-VA-GIMG-01" delay="0" img1="SR06A-VA-IMG-01" img2="SR06A-VA-IMG-02" img3="SR06A-VA-IMG-03" img4="SR06A-VA-IMG-04" img5="SR06A-VA-IMG-01" img6="SR06A-VA-IMG-01" img7="SR06A-VA-IMG-31" img8="SR06A-VA-IMG-31" />
+	<mks937a.mks937aImgGroup device="SR06C-VA-GIMG-01" delay="0" img1="SR06S-VA-GIMG-01" img2="SR06A-VA-GIMG-01" img3="SR06S-VA-GIMG-01" img4="SR06S-VA-GIMG-01" img5="SR06S-VA-GIMG-01" img6="SR06S-VA-GIMG-01" img7="SR06S-VA-GIMG-01" img8="SR06S-VA-GIMG-01" />
+	<mks937a.mks937aPirgGroup device="SR06S-VA-GPIRG-01" pirg1="SR06S-VA-PIRG-01" pirg2="SR06S-VA-PIRG-02" pirg3="SR06S-VA-PIRG-01" pirg4="SR06S-VA-PIRG-01" pirg5="SR06S-VA-PIRG-01" pirg6="SR06S-VA-PIRG-01" pirg7="SR06S-VA-PIRG-01" pirg8="SR06S-VA-PIRG-01" />
+	<mks937a.mks937aPirgGroup device="SR06A-VA-GPIRG-01" pirg1="SR06A-VA-PIRG-01" pirg2="SR06A-VA-PIRG-02" pirg3="SR06A-VA-PIRG-03" pirg4="SR06A-VA-PIRG-04" pirg5="SR06A-VA-PIRG-01" pirg6="SR06A-VA-PIRG-01" pirg7="SR06A-VA-PIRG-31" pirg8="SR06A-VA-PIRG-31" />
+	<mks937a.mks937aPirgGroup device="SR06C-VA-GPIRG-01" pirg1="SR06S-VA-GPIRG-01" pirg2="SR06A-VA-GPIRG-01" pirg3="SR06S-VA-GPIRG-01" pirg4="SR06S-VA-GPIRG-01" pirg5="SR06S-VA-GPIRG-01" pirg6="SR06S-VA-GPIRG-01" pirg7="SR06S-VA-GPIRG-01" pirg8="SR06S-VA-GPIRG-01" />
+	<dlsPLC.vacValveGroup device="SR06S-VA-GVALV-01" delay="0" valve1="SR06A-VA-VALVE-01" valve2="SR06A-VA-VALVE-01" valve3="SR06A-VA-VALVE-01" valve4="SR06A-VA-VALVE-01" valve5="SR06A-VA-VALVE-01" valve6="SR06A-VA-VALVE-01" valve7="SR06A-VA-VALVE-01" valve8="SR06A-VA-VALVE-01" />
+	<dlsPLC.vacValveGroup device="SR06A-VA-GVALV-01" delay="5" valve1="SR06A-VA-VALVE-02" valve2="SR06A-VA-VALVE-03" valve3="SR06A-VA-VALVE-01" valve4="SR06A-VA-VALVE-04" valve5="SR06A-VA-VALVE-02" valve6="SR06A-VA-VALVE-02" valve7="SR06A-VA-VALVE-02" valve8="SR06A-VA-VALVE-02" />
+	<dlsPLC.vacValveGroup device="SR06C-VA-GVALV-01" delay="5" valve1="SR06A-VA-GVALV-01" valve2="SR06A-VA-GVALV-01" valve3="SR06A-VA-GVALV-01" valve4="SR06A-VA-GVALV-01" valve5="SR06S-VA-GVALV-01" valve6="SR06S-VA-GVALV-01" valve7="SR06S-VA-GVALV-01" valve8="SR06S-VA-GVALV-01" />
+	<rga.auto_rgaGroup device="SR06C-VA-GRGA-01" rga1="SR06S-VA-RGA-01" rga2="SR06A-VA-RGA-01" rga3="SR06A-VA-RGA-02" rga4="FE06I-VA-RGA-01" rga5="BL06I-VA-RGA-01" rga6="SR06S-VA-RGA-01" rga7="SR06S-VA-RGA-01" rga8="SR06S-VA-RGA-01" />
+	<digitelMpc.digitelMpcTspGroup device="SR06C-VA-GTSP-01" tsp1="SR06A-VA-TSP-01" tsp2="SR06A-VA-TSP-02" tsp3="SR06A-VA-TSP-01" tsp4="SR06A-VA-TSP-01" tsp5="SR06A-VA-TSP-01" tsp6="SR06A-VA-TSP-01" tsp7="SR06A-VA-TSP-01" tsp8="SR06A-VA-TSP-01" />
+	<mks937a.auto_mks937aImgMean device="SR06S-VA-MIMG-01" current="SR-DI-DCCT-01:SIGNAL" nimgs="2" img1="SR06S-VA-IMG-01" img2="SR06S-VA-IMG-02" img3="SR06S-VA-IMG-01" img4="SR06S-VA-IMG-01" img5="SR06S-VA-IMG-01" img6="SR06S-VA-IMG-01" img7="SR06S-VA-IMG-01" img8="SR06S-VA-IMG-01" img9="SR06S-VA-IMG-01" img10="SR06S-VA-IMG-01" />
+	<mks937a.auto_mks937aImgMean device="SR06A-VA-MIMG-01" current="SR-DI-DCCT-01:SIGNAL" nimgs="4" img1="SR06A-VA-IMG-01" img2="SR06A-VA-IMG-02" img3="SR06A-VA-IMG-03" img4="SR06A-VA-IMG-04" img5="SR06A-VA-IMG-01" img6="SR06A-VA-IMG-01" img7="SR06A-VA-IMG-01" img8="SR06A-VA-IMG-01" img9="SR06S-VA-IMG-01" img10="SR06S-VA-IMG-01" />
+	<mks937a.auto_mks937aImgMean device="SR06C-VA-MIMG-01" current="SR-DI-DCCT-01:SIGNAL" nimgs="6" img1="SR06S-VA-IMG-01" img2="SR06S-VA-IMG-02" img3="SR06A-VA-IMG-01" img4="SR06A-VA-IMG-02" img5="SR06A-VA-IMG-03" img6="SR06A-VA-IMG-04" img7="SR06A-VA-IMG-01" img8="SR06A-VA-IMG-01" img9="SR06A-VA-IMG-01" img10="SR06A-VA-IMG-01" />
+	<mks937a.auto_mks937aImgMean device="SR06S-VA-MIMG-02" current="SR-DI-DCCT-01:SIGNAL" nimgs="6" img1="SR06S-VA-IMG-01" img2="SR06S-VA-IMG-02" img3="SR06A-VA-IMG-01" img4="SR06A-VA-IMG-02" img5="SR05A-VA-IMG-03" img6="SR05A-VA-IMG-04" img7="SR06A-VA-IMG-01" img8="SR06A-VA-IMG-01" img9="SR06A-VA-IMG-01" img10="SR06A-VA-IMG-01" />
+	<rackFan.rackFan device="SR06C-VA-FANC-01" c="60" s="1" />
+	<rackFan.rackFan device="SR06C-VA-FANC-02" c="60" s="2" />
+	<rackFan.rackFan device="SR06C-VA-FANC-03" c="60" s="0" />
+	<rackFan.rackFan device="SR06C-PS-FANC-01" c="60" s="3" />
+	<IOCinfo.IOCinfo device="SR06C-VA-IOC-01" />
+	<FINS.FINSTemplate device="SR06C-VA-VLVCC-01" port="vlvcc_fins_port1" />
+	<TimingTemplates.defaultEVR device="SR06C-VA-EVR-01" card="1" />
+	<SR-VA.auto_psu24vStatus device="SR06C-VA-PSU-01" card="60" signal="4" />
+	<SR-VA.auto_psu24vStatus device="SR06C-VA-PSU-02" card="60" signal="5" />
+	<SR-VA.auto_psu24vStatus device="SR06C-PS-PSU-01" card="60" signal="6" />
+	<FastVacuum.Master16 device="SR06C-VA-VFAST-01" nelm="2200" card="52" hz="200" />
+	<FastVacuum.auto_Channel16 device="SR06C-VA-VFAST-01" nelm="2200" card="52" channel="0" img="01" name="SR06S-VA-IMG-01" />
+	<FastVacuum.auto_Channel16 device="SR06C-VA-VFAST-01" nelm="2200" card="52" channel="1" img="02" name="SR06S-VA-IMG-02" />
+	<FastVacuum.auto_Channel16 device="SR06C-VA-VFAST-01" nelm="2200" card="52" channel="2" img="03" name="SR06A-VA-IMG-01" />
+	<FastVacuum.auto_Channel16 device="SR06C-VA-VFAST-01" nelm="2200" card="52" channel="3" img="04" name="SR06A-VA-IMG-02" />
+	<FastVacuum.auto_Channel16 device="SR06C-VA-VFAST-01" nelm="2200" card="52" channel="4" img="05" name="SR06A-VA-IMG-03" />
+	<FastVacuum.auto_Channel16 device="SR06C-VA-VFAST-01" nelm="2200" card="52" channel="5" img="06" name="SR06A-VA-IMG-04" />
+	<FastVacuum.auto_ChannelUn device="SR06C-VA-VFAST-01" img="07" name="SR06C-VA-SPARE-07" />
+	<FastVacuum.auto_ChannelUn device="SR06C-VA-VFAST-01" img="08" name="SR06C-VA-SPARE-08" />
+	<FastVacuum.auto_ChannelUn device="SR06C-VA-VFAST-01" img="09" name="SR06C-VA-SPARE-09" />
+	<FastVacuum.auto_ChannelUn device="SR06C-VA-VFAST-01" img="10" name="SR06C-VA-SPARE-10" />
+	<FastVacuum.auto_ChannelUn device="SR06C-VA-VFAST-01" img="11" name="SR06C-VA-SPARE-11" />
+	<FastVacuum.auto_ChannelUn device="SR06C-VA-VFAST-01" img="12" name="SR06C-VA-SPARE-12" />
+	<FastVacuum.auto_ChannelUn device="SR06C-VA-VFAST-01" img="13" name="SR06C-VA-SPARE-13" />
+	<FastVacuum.auto_ChannelUn device="SR06C-VA-VFAST-01" img="14" name="SR06C-VA-SPARE-14" />
+	<FastVacuum.auto_ChannelUn device="SR06C-VA-VFAST-01" img="15" name="SR06C-VA-SPARE-15" />
+	<FastVacuum.auto_ChannelUn device="SR06C-VA-VFAST-01" img="16" name="SR06C-VA-SPARE-16" />	
+</components>
