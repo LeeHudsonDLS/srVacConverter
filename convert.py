@@ -29,6 +29,19 @@ def substitueAsynPorts(input_xml):
             for attr in elem.attrib:
                 if elem.attrib[attr] in serial_replacements:
                     elem.attrib[attr] = serial_replacements[elem.attrib[attr]]
+
+    # Convert class to asyn.AsynSerial
+    for elem in root.findall("asyn.AsynSerial"):
+        elem.tag = "asyn.AsynIP"
+
+    # Clear the port
+    for elem in root.findall("asyn.AsynIP"):
+        elem.set("port", f"192.168.{cell}.")
+
+    # Remove priority
+    for elem in root.findall("asyn.AsynIP"):
+        if "priority" in elem.attrib:
+            del elem.attrib["priority"]
     
     # Output modified XML with declaration
     return '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
@@ -57,13 +70,13 @@ def remove_unwanted_tags(input_xml):
             root.remove(elem)
     
     # Output modified XML with declaration
-    print(ET.tostring(root, encoding='unicode'))
     return '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
 
 
 # Example usage
 input_filename = "SR06C-VA-IOC-01.xml"
 output_filename = input_filename.replace(".xml", "_converted.xml")
+cell = 6
 
 with open(input_filename, "r") as file:
     input_xml = file.read()
