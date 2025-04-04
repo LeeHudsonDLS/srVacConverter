@@ -47,29 +47,10 @@ def substitueAsynPorts(input_xml):
     output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
     return output
 
-def remove_unwanted_tags(input_xml):
+def remove_unwanted_tags(input_xml,unwanted_tags):
     tree = ET.ElementTree(ET.fromstring(input_xml))
     root = tree.getroot()
-    
-    # Define unwanted tags
-    unwanted_tags = ["mrfTiming.EventReceiverPMC",
-                     "ipac.Hy8002",
-                     "ipac.Hy8001",
-                     "Hy8401ip.Hy8401",
-                     "Hy8414.Hy8414",
-                     "DLS8515.DLS8515",
-                     "FINS.FINSHostlink",
-                     "DLS8515.DLS8515channel",
-                     "Hy8401ip.auto_Hy8401ip",
-                     "dlsPLC.read100",
-                     "FastVacuum.Master16",
-                     "FastVacuum.auto_Channel16",
-                     "FastVacuum.auto_ChannelUn",
-                     "TimingTemplates.defaultEVR",
-                     "SR-VA.auto_psu24vStatus",
-                     "rackFan.rackFan",
-                     "IOCinfo.IOCinfo",
-                     "FINS.FINSTemplate"]
+
     
     # Remove elements with unwanted tags
     for elem in root.findall("*"):
@@ -97,7 +78,7 @@ def find_last_element_index(root,target):
     else:
         return -1
 
-def add_fins_udp_init(input_xml,after=None):
+def add_plc_ports(input_xml,after=None):
     tree = ET.ElementTree(ET.fromstring(input_xml))
     root = tree.getroot()
     
@@ -106,16 +87,25 @@ def add_fins_udp_init(input_xml,after=None):
     fins_elem.set("ip", "192.168.5.10")
     fins_elem.set("name", "VLVCC_01_FINS")
     fins_elem.set("simulation", "None")
-
+    
+    #<ether_ip.EtherIPInit device="SR05C-VA-VLVCC-01" ip="192.168.5.10" name="VLVCC_01.INFO" port="VLVCC_01_EIP"/>
+    eip_element = ET.Element("ether_ip.EtherIPInit")
+    eip_element.set("device",f"SR{cell:02d}C-VA-VLVCC-01")
+    eip_element.set("ip",f"192.168.{cell}.10")
+    eip_element.set("name","VLVCC_01.INFO")
+    eip_element.set("port","VLVCC_01_EIP")
 
     if after is not None:
         position = find_last_element_index(root,after)
         if position > 0:
             root.insert(position + 1, fins_elem)
+            root.insert(position + 1, eip_element)
         else:
             root.append(fins_elem)
+            root.append(eip_element)
     else:
         root.append(fins_elem)
+        root.append(eip_element)
 
 
     # Output modified XML with declaration
@@ -161,7 +151,97 @@ def add_NX102_readReal(input_xml, after = None):
             root.insert(position + 1, elem)
             position += 1
 
+    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
+    output = output.replace('><',">\n\t<")
+    return output
+
+def convertFastVacuum(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+
+    gauges = dict()
+    elementList = list()
+
+    fvMaster = ET.Element("dlsPLC.fastVacuumMaster")
+    fvMaster.set("dom",f"SR{cell:02d}C")
+    fvMaster.set("eip_port","VLVCC_01_EIP")
+    fvMaster.set("fins_port","VLVCC_01_FINS")
+    fvMaster.set("name","FV.MASTER")
+
+    for elem in root.findall("FastVacuum.auto_Channel16"):
+        gauges[elem.get("name")] = elem.get("img")
+
+    for gauge in gauges:
+        elem = ET.Element("dlsPLC.fastVacuumChannel")
+        elem.set("img",gauge)
+        elem.set("id",gauges[gauge])
+        elem.set("master","FV.MASTER")
+        elem.set("name",f"FV.G{int(gauges[gauge])}")
+        elementList.append(elem)
+
+    root.append(fvMaster)
+    for elem in elementList:
+        root.append(elem)
+
+    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
+    output = output.replace('><',">\n\t<")
+    return output
+
+def convertValves(input_xml,after=None):  
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()  
+
+    valves = list()
+    elementList = list()
+
+    for elem in root.findall("dlsPLC.vacValveDebounce"):
+        valves.append(elem.get("device"))
+
+    
+    for valve in valves:
+        nxValve = ET.Element("dlsPLC.NX102_vacValveDebounce")
+        nxValve.set("ILKNUM","1")
+        nxValve.set("device",valve)
+        nxValve.set("name",f"V{valve[-1]}")
+        nxValve.set("port","VLVCC_01_EIP")
+        nxValve.set("tag","V")
+        nxValve.set("tagidx",f"{valve[-1]}")
+        elementList.append(nxValve)
+
+    if after is not None:
+        position = find_last_element_index(root,after)
+    else:
+        position = -1
+
+    for elem in elementList:
+        if position < 0:
+            root.append(elem)
+        else:
+            root.insert(position + 1, elem)
+            position += 1
+
+    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
+    output = output.replace('><',">\n\t<")
+    return output
+
+def addMks937abCombGauge(input_xml,gauge,mks):  
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+
+    dom = f"SR{cell:02d}{gauge.split("_")[1]}"
+    id = f"{int(gauge.split("_")[-1]):01d}"
+    input = f"{dom}-VA-GAUGE-{int(id):02d}:RAW"
         
+    gaugeElement = ET.Element(f"mks937{mks}.mks937{mks}GaugeEGU")
+    gaugeElement.set("dom",dom)
+    gaugeElement.set("id",id)
+    gaugeElement.set("input",input)
+    gaugeElement.set("name",gauge)
+
+    position = find_last_element_index(root,f"mks937{mks}.mks937{mks}GaugeEGU")
+    if position < 0:
+        position = find_last_element_index(root,"mks937a.mks937a")
+    root.insert(position + 1, gaugeElement)
 
 
     output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
@@ -169,28 +249,58 @@ def add_NX102_readReal(input_xml, after = None):
     return output
 
 
+
+
+
 # Example usage
 input_filename = "SR06C-VA-IOC-01.xml"
 output_filename = input_filename.replace(".xml", "_converted.xml")
 cell = 6
-gaugeConfig = {"GAUGE_S_01":{"slot":"A","vlvcc":"1"},
-               "GAUGE_S_02":{"slot":"B","vlvcc":"1"},
-               "GAUGE_A_01":{"slot":"A","vlvcc":"1"},
-               "GAUGE_A_02":{"slot":"B","vlvcc":"1"},
-               "GAUGE_A_03":{"slot":"B","vlvcc":"2"},
-               "GAUGE_A_31":{"slot":"A","vlvcc":"2"},
-               "GAUGE_A_04":{"slot":"B","vlvcc":"2"}}
+gaugeConfig = {"GAUGE_S_01":{"slot":"A","vlvcc":"1","mksType":"b"},
+               "GAUGE_S_02":{"slot":"B","vlvcc":"1","mksType":"b"},
+               "GAUGE_A_01":{"slot":"A","vlvcc":"1","mksType":"b"},
+               "GAUGE_A_02":{"slot":"B","vlvcc":"1","mksType":"b"},
+               "GAUGE_A_03":{"slot":"B","vlvcc":"2","mksType":"b"},
+               "GAUGE_A_31":{"slot":"A","vlvcc":"2","mksType":"b"},
+               "GAUGE_A_04":{"slot":"B","vlvcc":"2","mksType":"b"}}
+
+    # Define unwanted tags
+firstBatchUnwanted = ["mrfTiming.EventReceiverPMC",
+                    "ipac.Hy8002",
+                    "ipac.Hy8001",
+                    "Hy8401ip.Hy8401",
+                    "Hy8414.Hy8414",
+                    "DLS8515.DLS8515",
+                    "FINS.FINSHostlink",
+                    "DLS8515.DLS8515channel",
+                    "Hy8401ip.auto_Hy8401ip",
+                    "dlsPLC.read100",
+                    "TimingTemplates.defaultEVR",
+                    "SR-VA.auto_psu24vStatus",
+                    "rackFan.rackFan",
+                    "IOCinfo.IOCinfo",
+                    "FINS.FINSTemplate"]
+
 
 
 with open(input_filename, "r") as file:
     input_xml = file.read()
 
-converted_xml = remove_unwanted_tags(input_xml)
+converted_xml = remove_unwanted_tags(input_xml,firstBatchUnwanted)
 converted_xml = substitueAsynPorts(converted_xml)
-converted_xml = add_fins_udp_init(converted_xml,"asyn.AsynIP")
+converted_xml = add_plc_ports(converted_xml,"asyn.AsynIP")
 converted_xml = add_NX102_readReal(converted_xml,after="FINS.FINSUDPInit")
+converted_xml = convertFastVacuum(converted_xml)
+converted_xml = remove_unwanted_tags(converted_xml,["FastVacuum.Master16","FastVacuum.auto_Channel16","FastVacuum.auto_ChannelUn"])
+converted_xml = convertValves(converted_xml,after="dlsPLC.vacValveDebounce")
+converted_xml = remove_unwanted_tags(converted_xml,["dlsPLC.vacValveDebounce"])
+
+for gauge in gaugeConfig:
+    converted_xml = addMks937abCombGauge(converted_xml,gauge,gaugeConfig[gauge]["mksType"])
 
 
+
+converted_xml = remove_unwanted_tags(converted_xml,["mks937a.mks937aGauge"])
 
 with open(output_filename, "w") as file:
     file.write(converted_xml)
