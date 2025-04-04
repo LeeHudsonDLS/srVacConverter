@@ -248,8 +248,61 @@ def addMks937abCombGauge(input_xml,gauge,mks):
     output = output.replace('><',">\n\t<")
     return output
 
+def addEpicsEnvs(input_xml):
+
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+
+    envList = list()
+
+    envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="IOCSH_PS1",value=f"SR{cell:02d}C-VA-IOC-01 -&gt;"))
+    envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="EPICS_CA_AUTO_ADDR_LIST",value="NO"))
+    envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="EPICS_CA_ADDR_LIST",value="172.23.207.255"))
+    envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="EPICS_CAS_AUTO_BEACON_ADDR_LIST",value="NO"))
+    envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="EPICS_CAS_BEACON_ADDR_LIST",value="serverIP"))
+
+    for env in envList:
+        position = find_last_element_index(root,f"EPICS_BASE.EpicsEnvSet")
+        if position < 0:
+            position = find_last_element_index(root,"devIocStats.devIocStatsHelper")
+        root.insert(position + 1, env)
+
+    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
+    output = output.replace('><',">\n\t<")
+    return output
+
+def addMPCInterlocks(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+
+    straightIonps = list()
+    arcIonps = list()
+    elementList = list()
+
+    for elem in root.findall("digitelMpc.digitelMpcIonp"):
+        mpc = elem.get("MPC")
+        if f"{mpc.split("_")[1]}" == "S":
+            straightIonps.append(elem.get("device"))
+        else:
+            arcIonps.append(elem.get("device"))
+
+    for ionp in straightIonps:
+        elementList.append(ET.Element("dlsPLC.NX102_interlock",device=f"{ionp}:MPS_ILK",interlock="",port="VLVCC_01_EIP",tag="MPC",tagidx="1"))
+
+    for ionp in arcIonps:
+        elementList.append(ET.Element("dlsPLC.NX102_interlock",device=f"{ionp}:MPS_ILK",interlock="",port="VLVCC_01_EIP",tag="MPC",tagidx="2"))
+
+    for elem in elementList:
+        position = find_last_element_index(root,f"dlsPLC.NX102_interlock")
+        if position < 0:
+            position = find_last_element_index(root,"dlsPLC.NX102_readReal")
+        root.insert(position + 1, elem)
 
 
+    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
+    output = output.replace('><',">\n\t<")
+    return output
+    
 
 
 # Example usage
@@ -279,12 +332,14 @@ firstBatchUnwanted = ["mrfTiming.EventReceiverPMC",
                     "SR-VA.auto_psu24vStatus",
                     "rackFan.rackFan",
                     "IOCinfo.IOCinfo",
-                    "FINS.FINSTemplate"]
-
+                    "FINS.FINSTemplate",
+                    "EPICS_BASE.EpicsEnvSet",
+                    "EPICS_BASE.StartupCommand"]
 
 
 with open(input_filename, "r") as file:
     input_xml = file.read()
+
 
 converted_xml = remove_unwanted_tags(input_xml,firstBatchUnwanted)
 converted_xml = substitueAsynPorts(converted_xml)
@@ -301,6 +356,8 @@ for gauge in gaugeConfig:
 
 
 converted_xml = remove_unwanted_tags(converted_xml,["mks937a.mks937aGauge"])
+converted_xml = addEpicsEnvs(converted_xml)
+converted_xml = addMPCInterlocks(converted_xml)
 
 with open(output_filename, "w") as file:
     file.write(converted_xml)
