@@ -338,6 +338,14 @@ converted_xml = addEpicsEnvs(converted_xml)
 converted_xml = addMPCInterlocks(converted_xml)
 converted_xml = addPLCIO(converted_xml)
 
+convertAllmks = True
+for gauge in gaugeConfig:
+    if gaugeConfig[gauge]["mksType"] == "a":
+       convertAllmks = False
+
+converted_xml = converted_xml.replace('937a','937b')
+ 
+
 with open(output_filename, "w") as file:
     file.write(converted_xml)
 
