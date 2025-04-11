@@ -281,12 +281,50 @@ def addPLCIO(input_xml):
     return addXMLBoilerPlate(root)
 
 
+def addExtraGaugeControllers(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
 
+    for i in range(0,2):
+        element = ET.Element("mks937b.mks937b",name=f"GCTLR_{d2GaugeControllers[i]}_01",device=f"SR{cell:02d}{d2GaugeControllers[i]}-VA-GCTLR-01",port=f"GCTLR_{d2GaugeControllers[i]}_01_PORT",address="001")
+        insertElementList(root,[element],after="dlsPLC.NX102_interlock")
+
+    return addXMLBoilerPlate(root)
+
+def sortAsynPort(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+    elementList = list()
+
+    for port in asynPorts:
+        elementList.append(ET.Element("asyn.AsynIP", name=port,port=asynPorts[port]))
+
+    root = insertElementList(root,elementList,after="EPICS_BASE.EpicsEnvSet")
+    return addXMLBoilerPlate(root)
 
 # Example usage
 input_filename = "SR06C-VA-IOC-01.xml"
 output_filename = input_filename.replace(".xml", "_converted.xml")
 cell = 6
+d2GaugeControllers = ["SS","KS"]
+
+asynPorts ={f"GCTLR_{d2GaugeControllers[0]}_01_PORT":f"192.168.{cell}.7001",
+            f"GCTLR_A_01_PORT":f"192.168.{cell}.11:7002",
+            f"GCTLR_S_01_PORT":f"192.168.{cell}.11:7003",
+            f"MPC_S_01_PORT":f"192.168.{cell}.11:7004",
+            f"MPC_A_01_PORT":f"192.168.{cell}.11:7005",
+            f"MPC_A_02_PORT":f"192.168.{cell}.11:7006",
+            f"RGA_PC_01_PORT":f"192.168.{cell}.12:7001",
+            f"GCTLR_{d2GaugeControllers[1]}_01_PORT":f"192.168.{cell}.12:7002",
+            f"GCTLR_A_02_PORT":f"192.168.{cell}.12:7003",
+            f"GCTLR_A_03_PORT":f"192.168.{cell}.12:7004",
+            f"MPC_A_03_PORT":f"192.168.{cell}.12:7005",
+            f"MPC_A_04_PORT":f"192.168.{cell}.12:7006",
+            f"MPC_A_05_PORT":f"192.168.{cell}.12:7007",
+            f"MPC_A_06_PORT":f"192.168.{cell}.12:7008",
+            f"MPC_A_07_PORT":f"192.168.{cell}.12:7009",
+            f"MPC_A_08_PORT":f"192.168.{cell}.12:7010"}
+
 gaugeConfig = {"GAUGE_S_01":{"slot":"A","vlvcc":"1","mksType":"b"},
                "GAUGE_S_02":{"slot":"B","vlvcc":"1","mksType":"b"},
                "GAUGE_A_01":{"slot":"A","vlvcc":"1","mksType":"b"},
@@ -337,14 +375,15 @@ converted_xml = remove_unwanted_tags(converted_xml,["mks937a.mks937aGauge"])
 converted_xml = addEpicsEnvs(converted_xml)
 converted_xml = addMPCInterlocks(converted_xml)
 converted_xml = addPLCIO(converted_xml)
-
+converted_xml = addExtraGaugeControllers(converted_xml)
 convertAllmks = True
 for gauge in gaugeConfig:
     if gaugeConfig[gauge]["mksType"] == "a":
        convertAllmks = False
 
 converted_xml = converted_xml.replace('937a','937b')
- 
+converted_xml = remove_unwanted_tags(converted_xml,["asyn.AsynIP"])
+converted_xml = sortAsynPort(converted_xml)
 
 with open(output_filename, "w") as file:
     file.write(converted_xml)
