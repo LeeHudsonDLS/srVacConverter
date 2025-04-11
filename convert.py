@@ -1,5 +1,25 @@
 import xml.etree.ElementTree as ET
 
+def insertElementList(root,elementList, after=None):
+
+    position = -1
+    if after is not None:
+        position = find_last_element_index(root,after)
+
+    for elem in reversed(elementList):
+        if position > 0:
+            root.insert(position + 1, elem)
+        else:
+            root.append(elem)
+
+    return root
+
+def addXMLBoilerPlate(root):
+
+    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
+    output = output.replace('><',">\n\t<")
+    return output
+
 
 def substitueAsynPorts(input_xml):
     asynPortClasses=["asyn.AsynSerial","mks937a.mks937a","digitelMpc.digitelMpc"]
@@ -44,8 +64,7 @@ def substitueAsynPorts(input_xml):
             del elem.attrib["priority"]
     
     # Output modified XML with declaration
-    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
-    return output
+    return addXMLBoilerPlate(root)
 
 def remove_unwanted_tags(input_xml,unwanted_tags):
     tree = ET.ElementTree(ET.fromstring(input_xml))
@@ -58,8 +77,7 @@ def remove_unwanted_tags(input_xml,unwanted_tags):
             root.remove(elem)
     
     # Output modified XML with declaration
-    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
-    return output
+    return addXMLBoilerPlate(root)
 
 # Returns index of last instance on element found
 def find_last_element_index(root,target):
@@ -81,37 +99,26 @@ def find_last_element_index(root,target):
 def add_plc_ports(input_xml,after=None):
     tree = ET.ElementTree(ET.fromstring(input_xml))
     root = tree.getroot()
-    
+    elementList = list()
     # Create the new FINS.FINSUDPInit element
     fins_elem = ET.Element("FINS.FINSUDPInit")
     fins_elem.set("ip", "192.168.5.10")
     fins_elem.set("name", "VLVCC_01_FINS")
     fins_elem.set("simulation", "None")
     
-    #<ether_ip.EtherIPInit device="SR05C-VA-VLVCC-01" ip="192.168.5.10" name="VLVCC_01.INFO" port="VLVCC_01_EIP"/>
     eip_element = ET.Element("ether_ip.EtherIPInit")
     eip_element.set("device",f"SR{cell:02d}C-VA-VLVCC-01")
     eip_element.set("ip",f"192.168.{cell}.10")
     eip_element.set("name","VLVCC_01.INFO")
     eip_element.set("port","VLVCC_01_EIP")
 
-    if after is not None:
-        position = find_last_element_index(root,after)
-        if position > 0:
-            root.insert(position + 1, fins_elem)
-            root.insert(position + 1, eip_element)
-        else:
-            root.append(fins_elem)
-            root.append(eip_element)
-    else:
-        root.append(fins_elem)
-        root.append(eip_element)
+    elementList.append(eip_element)
+    elementList.append(fins_elem)
 
+   
+    root=insertElementList(root,elementList,after)
 
-    # Output modified XML with declaration
-    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
-    output = output.replace('><',">\n\t<")
-    return output
+    return addXMLBoilerPlate(root)
 
 def add_NX102_readReal(input_xml, after = None):
     tree = ET.ElementTree(ET.fromstring(input_xml))
@@ -132,28 +139,17 @@ def add_NX102_readReal(input_xml, after = None):
         else:
             chan="2"
 
-        readReadElem = ET.Element("dlsPLC.NX102_readReal")
-        readReadElem.set("device", f"{dom}-VA-GAUGE-{id}:RAW")
-        readReadElem.set("name", f"PLC_COMB0{index}")
-        readReadElem.set("port", "VLVCC_01_EIP")
-        readReadElem.set("tag", f"{dom}_VC{vc}_GCTLR_{id}_COMB_{slot}_C{chan}_Comb_mBar")
-        elementList.append(readReadElem)
+        readRealElem = ET.Element("dlsPLC.NX102_readReal")
+        readRealElem.set("device", f"{dom}-VA-GAUGE-{id}:RAW")
+        readRealElem.set("name", f"PLC_COMB0{index}")
+        readRealElem.set("port", "VLVCC_01_EIP")
+        readRealElem.set("tag", f"{dom}_VC{vc}_GCTLR_{id}_COMB_{slot}_C{chan}_Comb_mBar")
+        elementList.append(readRealElem)
 
-    if after is not None:
-        position = find_last_element_index(root,after)
-    else:
-        position = -1
 
-    for elem in elementList:
-        if position < 0:
-            root.append(elem)
-        else:
-            root.insert(position + 1, elem)
-            position += 1
+    root=insertElementList(root,elementList,after)
 
-    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
-    output = output.replace('><',">\n\t<")
-    return output
+    return addXMLBoilerPlate(root)
 
 def convertFastVacuum(input_xml):
     tree = ET.ElementTree(ET.fromstring(input_xml))
@@ -162,30 +158,20 @@ def convertFastVacuum(input_xml):
     gauges = dict()
     elementList = list()
 
-    fvMaster = ET.Element("dlsPLC.fastVacuumMaster")
-    fvMaster.set("dom",f"SR{cell:02d}C")
-    fvMaster.set("eip_port","VLVCC_01_EIP")
-    fvMaster.set("fins_port","VLVCC_01_FINS")
-    fvMaster.set("name","FV.MASTER")
+    fvMaster = ET.Element("dlsPLC.fastVacuumMaster",dom=f"SR{cell:02d}C",eip_port="VLVCC_01_EIP",fins_port="VLVCC_01_FINS",name="FV.MASTER")
 
     for elem in root.findall("FastVacuum.auto_Channel16"):
         gauges[elem.get("name")] = elem.get("img")
 
     for gauge in gauges:
-        elem = ET.Element("dlsPLC.fastVacuumChannel")
-        elem.set("img",gauge)
-        elem.set("id",gauges[gauge])
-        elem.set("master","FV.MASTER")
-        elem.set("name",f"FV.G{int(gauges[gauge])}")
+        elem = ET.Element("dlsPLC.fastVacuumChannel",img=gauge,id=gauges[gauge],master="FV.MASTER",name=f"FV.G{int(gauges[gauge])}")
         elementList.append(elem)
 
     root.append(fvMaster)
     for elem in elementList:
         root.append(elem)
 
-    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
-    output = output.replace('><',">\n\t<")
-    return output
+    return addXMLBoilerPlate(root)
 
 def convertValves(input_xml,after=None):  
     tree = ET.ElementTree(ET.fromstring(input_xml))
@@ -199,30 +185,12 @@ def convertValves(input_xml,after=None):
 
     
     for valve in valves:
-        nxValve = ET.Element("dlsPLC.NX102_vacValveDebounce")
-        nxValve.set("ILKNUM","1")
-        nxValve.set("device",valve)
-        nxValve.set("name",f"V{valve[-1]}")
-        nxValve.set("port","VLVCC_01_EIP")
-        nxValve.set("tag","V")
-        nxValve.set("tagidx",f"{valve[-1]}")
+        nxValve = ET.Element("dlsPLC.NX102_vacValveDebounce",ILKNUM="1",device=valve,name=f"V{valve[-1]}",port="VLVCC_01_EIP",tag="V",tagidx=f"{valve[-1]}")
         elementList.append(nxValve)
 
-    if after is not None:
-        position = find_last_element_index(root,after)
-    else:
-        position = -1
+    root = insertElementList(root,elementList,after=after)
 
-    for elem in elementList:
-        if position < 0:
-            root.append(elem)
-        else:
-            root.insert(position + 1, elem)
-            position += 1
-
-    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
-    output = output.replace('><',">\n\t<")
-    return output
+    return addXMLBoilerPlate(root)
 
 def addMks937abCombGauge(input_xml,gauge,mks):  
     tree = ET.ElementTree(ET.fromstring(input_xml))
@@ -232,11 +200,7 @@ def addMks937abCombGauge(input_xml,gauge,mks):
     id = f"{int(gauge.split("_")[-1]):01d}"
     input = f"{dom}-VA-GAUGE-{int(id):02d}:RAW"
         
-    gaugeElement = ET.Element(f"mks937{mks}.mks937{mks}GaugeEGU")
-    gaugeElement.set("dom",dom)
-    gaugeElement.set("id",id)
-    gaugeElement.set("input",input)
-    gaugeElement.set("name",gauge)
+    gaugeElement = ET.Element(f"mks937{mks}.mks937{mks}GaugeEGU",dom=dom,id=id,input=input,name=gauge)
 
     position = find_last_element_index(root,f"mks937{mks}.mks937{mks}GaugeEGU")
     if position < 0:
@@ -244,9 +208,7 @@ def addMks937abCombGauge(input_xml,gauge,mks):
     root.insert(position + 1, gaugeElement)
 
 
-    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
-    output = output.replace('><',">\n\t<")
-    return output
+    return addXMLBoilerPlate(root)
 
 def addEpicsEnvs(input_xml):
 
@@ -261,15 +223,9 @@ def addEpicsEnvs(input_xml):
     envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="EPICS_CAS_AUTO_BEACON_ADDR_LIST",value="NO"))
     envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="EPICS_CAS_BEACON_ADDR_LIST",value="serverIP"))
 
-    for env in envList:
-        position = find_last_element_index(root,f"EPICS_BASE.EpicsEnvSet")
-        if position < 0:
-            position = find_last_element_index(root,"devIocStats.devIocStatsHelper")
-        root.insert(position + 1, env)
+    root = insertElementList(root,envList,after="devIocStats.devIocStatsHelper")
 
-    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
-    output = output.replace('><',">\n\t<")
-    return output
+    return addXMLBoilerPlate(root)
 
 def addMPCInterlocks(input_xml):
     tree = ET.ElementTree(ET.fromstring(input_xml))
@@ -292,17 +248,39 @@ def addMPCInterlocks(input_xml):
     for ionp in arcIonps:
         elementList.append(ET.Element("dlsPLC.NX102_interlock",device=f"{ionp}:MPS_ILK",interlock="",port="VLVCC_01_EIP",tag="MPC",tagidx="2"))
 
-    for elem in elementList:
-        position = find_last_element_index(root,f"dlsPLC.NX102_interlock")
-        if position < 0:
-            position = find_last_element_index(root,"dlsPLC.NX102_readReal")
-        root.insert(position + 1, elem)
+
+    root = insertElementList(root,elementList,after="dlsPLC.NX102_readReal")
 
 
-    output = '<?xml version="1.0" ?>\n' + ET.tostring(root, encoding='unicode')
-    output = output.replace('><',">\n\t<")
-    return output
+    return addXMLBoilerPlate(root)
     
+def addPLCIO(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+
+    elementList = list()
+    elementList.append(ET.Element("dlsPLC.NX102_digitalIn",device=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01",name="DIG_01",port="VLVCC_01_EIP",tagidx="1"))
+    elementList.append(ET.Element("dlsPLC.NX102_digitalIn",device=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL02",name="DIG_02",port="VLVCC_01_EIP",tagidx="2"))
+
+    elementList.append(ET.Element("userIO.bi ",DESC="Rack 01 Fan Status",DTYP="Soft Channel",INP=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B0 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-FANC-01",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAFAN_01"))
+    elementList.append(ET.Element("userIO.bi ",DESC="Rack 02 Fan Status",DTYP="Soft Channel",INP=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B1 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-FANC-02",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAFAN_02"))
+    elementList.append(ET.Element("userIO.bi ",DESC="Rack 03 Fan Status",DTYP="Soft Channel",INP=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B2 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-FANC-03",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAFAN_03"))
+    elementList.append(ET.Element("userIO.bi ",DESC="Rack 01 Duplex PSU Status",DTYP="Soft Channel",INP=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B3 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-PSU-01",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAPSU_01"))
+    elementList.append(ET.Element("userIO.bi ",DESC="Rack 02 Duplex PSU Status",DTYP="Soft Channel",INP=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B4 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-PSU-02",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAPSU_02"))
+
+    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{cell:02d}C-VA-PSU-01:1",name="PSU01.1",port="VLVCC_01_EIP",tagidx="1"))
+    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{cell:02d}C-VA-PSU-01:2",name="PSU01.2",port="VLVCC_01_EIP",tagidx="2"))
+    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{cell:02d}C-VA-PSU-02:1",name="PSU02.1",port="VLVCC_01_EIP",tagidx="3"))
+    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{cell:02d}C-VA-PSU-02:2",name="PSU02.2",port="VLVCC_01_EIP",tagidx="4"))
+
+    elementList.append(ET.Element("dlsPLC.NX102_IRVacuum",P=f"SR{cell:02d}-VA-VALVE-01",port="VLVCC_01_EIP"))
+
+
+    root = insertElementList(root,elementList, after = "mks937a.auto_mks937aImgMean")
+
+    return addXMLBoilerPlate(root)
+
+
 
 
 # Example usage
@@ -358,6 +336,7 @@ for gauge in gaugeConfig:
 converted_xml = remove_unwanted_tags(converted_xml,["mks937a.mks937aGauge"])
 converted_xml = addEpicsEnvs(converted_xml)
 converted_xml = addMPCInterlocks(converted_xml)
+converted_xml = addPLCIO(converted_xml)
 
 with open(output_filename, "w") as file:
     file.write(converted_xml)
