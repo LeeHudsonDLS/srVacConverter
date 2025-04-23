@@ -10,7 +10,7 @@ class Cell:
             self.d2GaugeControllers = d2GaugeControllers
 
         if asynPorts is None:
-            self.asynPorts = {f"GCTLR_{self.d2GaugeControllers[0]}_01_PORT":f"192.168.{self.cell}.7001",
+            self.asynPorts = {f"GCTLR_{self.d2GaugeControllers[0]}_01_PORT":f"192.168.{self.cell}.11:7001",
                               "GCTLR_A_01_PORT":f"192.168.{self.cell}.11:7002",
                               "GCTLR_S_01_PORT":f"192.168.{self.cell}.11:7003",
                               "MPC_S_01_PORT":f"192.168.{self.cell}.11:7004",

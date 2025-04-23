@@ -323,7 +323,7 @@ def updateAutosave(input_xml):
 
     autosave = ET.Element("autosave.Autosave",bl="False",db_suffix=":SR",iocName=f"SR{target.cell:02d}",ip="172.23.194.14",path="/exports/home/ops-iocs/prod/autosave",req_prefix=f"SR{target.cell:02d}C",server="cs03r-cs-serv-14")
 
-    root = insertElementList(root,[autosave],after="devIocStats.devIocStatsHelper")
+    root.insert(0, autosave)
     return addXMLBoilerPlate(root)
 
 def addMks937bAddress(input_xml):
@@ -335,7 +335,34 @@ def addMks937bAddress(input_xml):
 
     return addXMLBoilerPlate(root)
 
+def addPVLogging(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
 
+    pvlog = ET.Element("pvlogging.PvLogging", name="PVLOG")
+    root.insert(0, pvlog)
+    return addXMLBoilerPlate(root)
+
+def addRgaPowerCycle(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+    
+    elementList = list()
+
+    elementList.append(ET.Element("SR-VA.auto_rgaPowerCycle", PORT="VLVCC_01_EIP", TAG="RGA_S_01_RESET", device=f"SR{target.cell:02d}S-VA-RGA-01"))
+    elementList.append(ET.Element("SR-VA.auto_rgaPowerCycle", PORT="VLVCC_01_EIP", TAG="RGA_A_01_RESET", device=f"SR{target.cell:02d}A-VA-RGA-01"))
+    elementList.append(ET.Element("SR-VA.auto_rgaPowerCycle", PORT="VLVCC_01_EIP", TAG="RGA_A_02_RESET", device=f"SR{target.cell:02d}A-VA-RGA-02"))
+    root = insertElementList(root,elementList,after="FINS.FINSUDPInit")
+    
+    return addXMLBoilerPlate(root)
+
+def addControllerStatus(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+
+    controllerStatus = ET.Element("dlsPLC.NX102_controller_status", port="VLVCC_01_EIP", device=f"SR{target.cell:02d}C-VA-VLVCC-01", name="PLC_CS")
+    root = insertElementList(root,[controllerStatus],after="FINS.FINSUDPInit")
+    return addXMLBoilerPlate(root)
 
 # Example usage
 # inputFileName = "SR06C-VA-IOC-01.xml"
@@ -425,6 +452,10 @@ converted_xml = addTerminalServer(converted_xml)
 converted_xml = remove_unwanted_tags(converted_xml,["autosave.Autosave"])
 converted_xml = updateAutosave(converted_xml)
 converted_xml = addMks937bAddress(converted_xml)
+converted_xml = addPVLogging(converted_xml)
+converted_xml = addRgaPowerCycle(converted_xml)
+converted_xml = addControllerStatus(converted_xml)
+
 
 
 converted_xml = converted_xml.replace("vxWorks-ppc604_long","linux-x86_64")
