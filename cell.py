@@ -17,7 +17,7 @@ class Cell:
                               "MPC_A_01_PORT":f"192.168.{self.cell}.11:7005",
                               "MPC_A_02_PORT":f"192.168.{self.cell}.11:7006",
                               "RGA_PC_01_PORT":f"192.168.{self.cell}.12:7001",
-                              "GCTLR_{self.d2GaugeControllers[1]}_01_PORT":f"192.168.{self.cell}.12:7002",
+                              f"GCTLR_{self.d2GaugeControllers[1]}_01_PORT":f"192.168.{self.cell}.12:7002",
                               "GCTLR_A_02_PORT":f"192.168.{self.cell}.12:7003",
                               "GCTLR_A_03_PORT":f"192.168.{self.cell}.12:7004",
                               "MPC_A_03_PORT":f"192.168.{self.cell}.12:7005",
