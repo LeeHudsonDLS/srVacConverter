@@ -1,4 +1,8 @@
+from cell import Cell, CellCollection
 import xml.etree.ElementTree as ET
+import shutil
+import subprocess
+import os
 
 def insertElementList(root,elementList, after=None):
 
@@ -7,7 +11,7 @@ def insertElementList(root,elementList, after=None):
         position = find_last_element_index(root,after)
 
     for elem in reversed(elementList):
-        if position > 0:
+        if position > -1:
             root.insert(position + 1, elem)
         else:
             root.append(elem)
@@ -56,7 +60,7 @@ def substitueAsynPorts(input_xml):
 
     # Clear the port
     for elem in root.findall("asyn.AsynIP"):
-        elem.set("port", f"192.168.{cell}.")
+        elem.set("port", f"192.168.{target.cell}.")
 
     # Remove priority
     for elem in root.findall("asyn.AsynIP"):
@@ -107,8 +111,8 @@ def add_plc_ports(input_xml,after=None):
     fins_elem.set("simulation", "None")
     
     eip_element = ET.Element("ether_ip.EtherIPInit")
-    eip_element.set("device",f"SR{cell:02d}C-VA-VLVCC-01")
-    eip_element.set("ip",f"192.168.{cell}.10")
+    eip_element.set("device",f"SR{target.cell:02d}C-VA-VLVCC-01")
+    eip_element.set("ip",f"192.168.{target.cell}.10")
     eip_element.set("name","VLVCC_01.INFO")
     eip_element.set("port","VLVCC_01_EIP")
 
@@ -131,8 +135,8 @@ def add_NX102_readReal(input_xml, after = None):
         id = elem.get("id")
         name = elem.get("name")
         dom = elem.get("dom")
-        vc = gaugeConfig[name]["vlvcc"]
-        slot = gaugeConfig[name]["slot"]
+        vc = target.gaugeConfig[name]["vlvcc"]
+        slot = target.gaugeConfig[name]["slot"]
         chan = ""
         if slot == "A":
             chan="1"
@@ -158,7 +162,7 @@ def convertFastVacuum(input_xml):
     gauges = dict()
     elementList = list()
 
-    fvMaster = ET.Element("dlsPLC.fastVacuumMaster",dom=f"SR{cell:02d}C",eip_port="VLVCC_01_EIP",fins_port="VLVCC_01_FINS",name="FV.MASTER")
+    fvMaster = ET.Element("dlsPLC.fastVacuumMaster",dom=f"SR{target.cell:02d}C",eip_port="VLVCC_01_EIP",fins_port="VLVCC_01_FINS",name="FV.MASTER")
 
     for elem in root.findall("FastVacuum.auto_Channel16"):
         gauges[elem.get("name")] = elem.get("img")
@@ -196,8 +200,8 @@ def addMks937abCombGauge(input_xml,gauge,mks):
     tree = ET.ElementTree(ET.fromstring(input_xml))
     root = tree.getroot()
 
-    dom = f"SR{cell:02d}{gauge.split("_")[1]}"
-    id = f"{int(gauge.split("_")[-1]):01d}"
+    dom = f"SR{target.cell:02d}{gauge.split('_')[1]}"
+    id = f"{int(gauge.split('_')[-1]):01d}"
     input = f"{dom}-VA-GAUGE-{int(id):02d}:RAW"
         
     gaugeElement = ET.Element(f"mks937{mks}.mks937{mks}GaugeEGU",dom=dom,id=id,input=input,name=gauge)
@@ -217,7 +221,7 @@ def addEpicsEnvs(input_xml):
 
     envList = list()
 
-    envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="IOCSH_PS1",value=f"SR{cell:02d}C-VA-IOC-01 -&gt;"))
+    envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="IOCSH_PS1",value=f"SR{target.cell:02d}C-VA-IOC-01 -&gt;"))
     envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="EPICS_CA_AUTO_ADDR_LIST",value="NO"))
     envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="EPICS_CA_ADDR_LIST",value="172.23.207.255"))
     envList.append(ET.Element("EPICS_BASE.EpicsEnvSet",key="EPICS_CAS_AUTO_BEACON_ADDR_LIST",value="NO"))
@@ -237,7 +241,7 @@ def addMPCInterlocks(input_xml):
 
     for elem in root.findall("digitelMpc.digitelMpcIonp"):
         mpc = elem.get("MPC")
-        if f"{mpc.split("_")[1]}" == "S":
+        if f"{mpc.split('_')[1]}" == "S":
             straightIonps.append(elem.get("device"))
         else:
             arcIonps.append(elem.get("device"))
@@ -259,21 +263,21 @@ def addPLCIO(input_xml):
     root = tree.getroot()
 
     elementList = list()
-    elementList.append(ET.Element("dlsPLC.NX102_digitalIn",device=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01",name="DIG_01",port="VLVCC_01_EIP",tagidx="1"))
-    elementList.append(ET.Element("dlsPLC.NX102_digitalIn",device=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL02",name="DIG_02",port="VLVCC_01_EIP",tagidx="2"))
+    elementList.append(ET.Element("dlsPLC.NX102_digitalIn",device=f"SR{target.cell:02d}C-VA-VLVCC-01:DIGITAL01",name="DIG_01",port="VLVCC_01_EIP",tagidx="1"))
+    elementList.append(ET.Element("dlsPLC.NX102_digitalIn",device=f"SR{target.cell:02d}C-VA-VLVCC-01:DIGITAL02",name="DIG_02",port="VLVCC_01_EIP",tagidx="2"))
 
-    elementList.append(ET.Element("userIO.bi ",DESC="Rack 01 Fan Status",DTYP="Soft Channel",INP=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B0 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-FANC-01",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAFAN_01"))
-    elementList.append(ET.Element("userIO.bi ",DESC="Rack 02 Fan Status",DTYP="Soft Channel",INP=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B1 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-FANC-02",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAFAN_02"))
-    elementList.append(ET.Element("userIO.bi ",DESC="Rack 03 Fan Status",DTYP="Soft Channel",INP=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B2 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-FANC-03",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAFAN_03"))
-    elementList.append(ET.Element("userIO.bi ",DESC="Rack 01 Duplex PSU Status",DTYP="Soft Channel",INP=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B3 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-PSU-01",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAPSU_01"))
-    elementList.append(ET.Element("userIO.bi ",DESC="Rack 02 Duplex PSU Status",DTYP="Soft Channel",INP=f"SR{cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B4 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-PSU-02",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAPSU_02"))
+    elementList.append(ET.Element("userIO.bi ",DESC="Rack 01 Fan Status",DTYP="Soft Channel",INP=f"SR{target.cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B0 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-FANC-01",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAFAN_01"))
+    elementList.append(ET.Element("userIO.bi ",DESC="Rack 02 Fan Status",DTYP="Soft Channel",INP=f"SR{target.cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B1 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-FANC-02",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAFAN_02"))
+    elementList.append(ET.Element("userIO.bi ",DESC="Rack 03 Fan Status",DTYP="Soft Channel",INP=f"SR{target.cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B2 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-FANC-03",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAFAN_03"))
+    elementList.append(ET.Element("userIO.bi ",DESC="Rack 01 Duplex PSU Status",DTYP="Soft Channel",INP=f"SR{target.cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B3 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-PSU-01",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAPSU_01"))
+    elementList.append(ET.Element("userIO.bi ",DESC="Rack 02 Duplex PSU Status",DTYP="Soft Channel",INP=f"SR{target.cell:02d}C-VA-VLVCC-01:DIGITAL01:RAWBIT.B4 CP",ONAM="HEALTHY",OSV="NO_ALARM",P="SR05C-VA-PSU-02",R=":STA",SCAN="Passive",ZNAM="FAIL",ZSV="MAJOR",archiver_rate="3600 Monitor", name="VAPSU_02"))
 
-    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{cell:02d}C-VA-PSU-01:1",name="PSU01.1",port="VLVCC_01_EIP",tagidx="1"))
-    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{cell:02d}C-VA-PSU-01:2",name="PSU01.2",port="VLVCC_01_EIP",tagidx="2"))
-    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{cell:02d}C-VA-PSU-02:1",name="PSU02.1",port="VLVCC_01_EIP",tagidx="3"))
-    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{cell:02d}C-VA-PSU-02:2",name="PSU02.2",port="VLVCC_01_EIP",tagidx="4"))
+    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{target.cell:02d}C-VA-PSU-01:1",name="PSU01.1",port="VLVCC_01_EIP",tagidx="1"))
+    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{target.cell:02d}C-VA-PSU-01:2",name="PSU01.2",port="VLVCC_01_EIP",tagidx="2"))
+    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{target.cell:02d}C-VA-PSU-02:1",name="PSU02.1",port="VLVCC_01_EIP",tagidx="3"))
+    elementList.append(ET.Element("dlsPLC.NX102_powerSupply",device=f"SR{target.cell:02d}C-VA-PSU-02:2",name="PSU02.2",port="VLVCC_01_EIP",tagidx="4"))
 
-    elementList.append(ET.Element("dlsPLC.NX102_IRVacuum",P=f"SR{cell:02d}-VA-VALVE-01",port="VLVCC_01_EIP"))
+    elementList.append(ET.Element("dlsPLC.NX102_IRVacuum",P=f"SR{target.cell:02d}-VA-VALVE-01",port="VLVCC_01_EIP"))
 
 
     root = insertElementList(root,elementList, after = "mks937a.auto_mks937aImgMean")
@@ -286,7 +290,7 @@ def addExtraGaugeControllers(input_xml):
     root = tree.getroot()
 
     for i in range(0,2):
-        element = ET.Element("mks937b.mks937b",name=f"GCTLR_{d2GaugeControllers[i]}_01",device=f"SR{cell:02d}{d2GaugeControllers[i]}-VA-GCTLR-01",port=f"GCTLR_{d2GaugeControllers[i]}_01_PORT",address="001")
+        element = ET.Element("mks937b.mks937b",name=f"GCTLR_{target.d2GaugeControllers[i]}_01",device=f"SR{target.cell:02d}{target.d2GaugeControllers[i]}-VA-GCTLR-01",port=f"GCTLR_{target.d2GaugeControllers[i]}_01_PORT",address="001")
         insertElementList(root,[element],after="dlsPLC.NX102_interlock")
 
     return addXMLBoilerPlate(root)
@@ -296,43 +300,66 @@ def sortAsynPort(input_xml):
     root = tree.getroot()
     elementList = list()
 
-    for port in asynPorts:
-        elementList.append(ET.Element("asyn.AsynIP", name=port,port=asynPorts[port]))
+    for port in target.asynPorts:
+        elementList.append(ET.Element("asyn.AsynIP", name=port,port=target.asynPorts[port]))
 
     root = insertElementList(root,elementList,after="EPICS_BASE.EpicsEnvSet")
     return addXMLBoilerPlate(root)
 
+def addTerminalServer(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+    elementList = list()
+
+    elementList.append(ET.Element("terminalServer.Moxa", HOST=f"192.168.{target.cell}.11", NCHANS='16', P = f"SR{target.cell:02d}C-VA-TSERV-01", R="", name="TSERV1"))
+    elementList.append(ET.Element("terminalServer.Moxa", HOST=f"192.168.{target.cell}.12", NCHANS='16', P = f"SR{target.cell:02d}C-VA-TSERV-02", R="", name="TSERV2"))
+
+    root = insertElementList(root,elementList,after="dlsPLC.fastVacuumChannel")
+    return addXMLBoilerPlate(root)
+
+def updateAutosave(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+
+    autosave = ET.Element("autosave.Autosave",bl="False",db_suffix=":SR",iocName=f"SR{target.cell:02d}",ip="172.23.194.14",path="/exports/home/ops-iocs/prod/autosave",req_prefix=f"SR{target.cell:02d}C",server="cs03r-cs-serv-14")
+
+    root = insertElementList(root,[autosave],after="devIocStats.devIocStatsHelper")
+    return addXMLBoilerPlate(root)
+
+
 # Example usage
-input_filename = "SR06C-VA-IOC-01.xml"
-output_filename = input_filename.replace(".xml", "_converted.xml")
-cell = 6
-d2GaugeControllers = ["SS","KS"]
+# inputFileName = "SR06C-VA-IOC-01.xml"
+# outputFilename = inputFileName.replace(".xml", "_converted.xml")
+# cell = 6
+# d2GaugeControllers = ["SS","KS"]
 
-asynPorts ={f"GCTLR_{d2GaugeControllers[0]}_01_PORT":f"192.168.{cell}.7001",
-            f"GCTLR_A_01_PORT":f"192.168.{cell}.11:7002",
-            f"GCTLR_S_01_PORT":f"192.168.{cell}.11:7003",
-            f"MPC_S_01_PORT":f"192.168.{cell}.11:7004",
-            f"MPC_A_01_PORT":f"192.168.{cell}.11:7005",
-            f"MPC_A_02_PORT":f"192.168.{cell}.11:7006",
-            f"RGA_PC_01_PORT":f"192.168.{cell}.12:7001",
-            f"GCTLR_{d2GaugeControllers[1]}_01_PORT":f"192.168.{cell}.12:7002",
-            f"GCTLR_A_02_PORT":f"192.168.{cell}.12:7003",
-            f"GCTLR_A_03_PORT":f"192.168.{cell}.12:7004",
-            f"MPC_A_03_PORT":f"192.168.{cell}.12:7005",
-            f"MPC_A_04_PORT":f"192.168.{cell}.12:7006",
-            f"MPC_A_05_PORT":f"192.168.{cell}.12:7007",
-            f"MPC_A_06_PORT":f"192.168.{cell}.12:7008",
-            f"MPC_A_07_PORT":f"192.168.{cell}.12:7009",
-            f"MPC_A_08_PORT":f"192.168.{cell}.12:7010"}
+# target.asynPorts ={f"GCTLR_{target.d2GaugeControllers[0]}_01_PORT":f"192.168.{target.cell}.7001",
+#             f"GCTLR_A_01_PORT":f"192.168.{target.cell}.11:7002",
+#             f"GCTLR_S_01_PORT":f"192.168.{target.cell}.11:7003",
+#             f"MPC_S_01_PORT":f"192.168.{target.cell}.11:7004",
+#             f"MPC_A_01_PORT":f"192.168.{target.cell}.11:7005",
+#             f"MPC_A_02_PORT":f"192.168.{target.cell}.11:7006",
+#             f"RGA_PC_01_PORT":f"192.168.{target.cell}.12:7001",
+#             f"GCTLR_{target.d2GaugeControllers[1]}_01_PORT":f"192.168.{target.cell}.12:7002",
+#             f"GCTLR_A_02_PORT":f"192.168.{target.cell}.12:7003",
+#             f"GCTLR_A_03_PORT":f"192.168.{target.cell}.12:7004",
+#             f"MPC_A_03_PORT":f"192.168.{target.cell}.12:7005",
+#             f"MPC_A_04_PORT":f"192.168.{target.cell}.12:7006",
+#             f"MPC_A_05_PORT":f"192.168.{target.cell}.12:7007",
+#             f"MPC_A_06_PORT":f"192.168.{target.cell}.12:7008",
+#             f"MPC_A_07_PORT":f"192.168.{target.cell}.12:7009",
+#             f"MPC_A_08_PORT":f"192.168.{target.cell}.12:7010"}
 
-gaugeConfig = {"GAUGE_S_01":{"slot":"A","vlvcc":"1","mksType":"b"},
-               "GAUGE_S_02":{"slot":"B","vlvcc":"1","mksType":"b"},
-               "GAUGE_A_01":{"slot":"A","vlvcc":"1","mksType":"b"},
-               "GAUGE_A_02":{"slot":"B","vlvcc":"1","mksType":"b"},
-               "GAUGE_A_03":{"slot":"B","vlvcc":"2","mksType":"b"},
-               "GAUGE_A_31":{"slot":"A","vlvcc":"2","mksType":"b"},
-               "GAUGE_A_04":{"slot":"B","vlvcc":"2","mksType":"b"}}
+# target.gaugeConfig = {"GAUGE_S_01":{"slot":"A","vlvcc":"1","mksType":"b"},
+#                "GAUGE_S_02":{"slot":"B","vlvcc":"1","mksType":"b"},
+#                "GAUGE_A_01":{"slot":"A","vlvcc":"1","mksType":"b"},
+#                "GAUGE_A_02":{"slot":"B","vlvcc":"1","mksType":"b"},
+#                "GAUGE_A_03":{"slot":"B","vlvcc":"2","mksType":"b"},
+#                "GAUGE_A_31":{"slot":"A","vlvcc":"2","mksType":"b"},
+#                "GAUGE_A_04":{"slot":"B","vlvcc":"2","mksType":"b"}}
 
+srVacuumCells = CellCollection()
+target = srVacuumCells.cells[7]
     # Define unwanted tags
 firstBatchUnwanted = ["mrfTiming.EventReceiverPMC",
                     "ipac.Hy8002",
@@ -353,7 +380,7 @@ firstBatchUnwanted = ["mrfTiming.EventReceiverPMC",
                     "EPICS_BASE.StartupCommand"]
 
 
-with open(input_filename, "r") as file:
+with open(target.inputFileName, "r") as file:
     input_xml = file.read()
 
 
@@ -366,8 +393,8 @@ converted_xml = remove_unwanted_tags(converted_xml,["FastVacuum.Master16","FastV
 converted_xml = convertValves(converted_xml,after="dlsPLC.vacValveDebounce")
 converted_xml = remove_unwanted_tags(converted_xml,["dlsPLC.vacValveDebounce"])
 
-for gauge in gaugeConfig:
-    converted_xml = addMks937abCombGauge(converted_xml,gauge,gaugeConfig[gauge]["mksType"])
+for gauge in target.gaugeConfig:
+    converted_xml = addMks937abCombGauge(converted_xml,gauge,target.gaugeConfig[gauge]["mksType"])
 
 
 
@@ -377,15 +404,47 @@ converted_xml = addMPCInterlocks(converted_xml)
 converted_xml = addPLCIO(converted_xml)
 converted_xml = addExtraGaugeControllers(converted_xml)
 convertAllmks = True
-for gauge in gaugeConfig:
-    if gaugeConfig[gauge]["mksType"] == "a":
+for gauge in target.gaugeConfig:
+    if target.gaugeConfig[gauge]["mksType"] == "a":
        convertAllmks = False
 
 converted_xml = converted_xml.replace('937a','937b')
 converted_xml = remove_unwanted_tags(converted_xml,["asyn.AsynIP"])
 converted_xml = sortAsynPort(converted_xml)
+converted_xml = addTerminalServer(converted_xml)
+converted_xml = remove_unwanted_tags(converted_xml,["autosave.Autosave"])
+converted_xml = updateAutosave(converted_xml)
 
-with open(output_filename, "w") as file:
+
+converted_xml = converted_xml.replace("vxWorks-ppc604_long","linux-x86_64")
+with open(target.outputFilename, "w") as file:
     file.write(converted_xml)
 
-print(f"Converted XML saved to {output_filename}")
+
+
+print(f"Converted XML saved to {target.outputFilename}")
+
+src = target.outputFilename
+dstFileName=src.replace('_converted','')
+dst = f"/dls_sw/work/R3.14.12.7/support/SR-BUILDER/etc/makeIocs/{os.path.basename(dstFileName)}"
+repo_dir = "/dls_sw/work/R3.14.12.7/support/SR-BUILDER"
+
+relative_path = os.path.relpath(dst, repo_dir)
+
+# Check for uncommitted changes in the file
+result = subprocess.run(
+    ["git", "status", "--porcelain", "--", relative_path],
+    cwd=repo_dir,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True
+)
+
+if result.stdout.strip():
+    print(f"Warning: {relative_path} has uncommitted changes in the repo.")
+else:
+    shutil.copy(src, dst)
+    print(f"Copied {src} to {dst}")
+
+#shutil.copy(target.outputFilename, f"/dls_sw/work/R3.14.12.7/support/SR-BUILDER/etc/makeIocs/{target.outputFilename}")
+# add req_prefix=f"SR{target.cell:02d}C" and db_suffix=":SR" to autosave
