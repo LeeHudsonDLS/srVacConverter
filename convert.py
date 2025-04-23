@@ -203,7 +203,7 @@ def addMks937abCombGauge(input_xml,gauge,mks):
     dom = f"SR{target.cell:02d}{gauge.split('_')[1]}"
     id = f"{int(gauge.split('_')[-1]):01d}"
     input = f"{dom}-VA-GAUGE-{int(id):02d}:RAW"
-        
+            
     gaugeElement = ET.Element(f"mks937{mks}.mks937{mks}GaugeEGU",dom=dom,id=id,input=input,name=gauge)
 
     position = find_last_element_index(root,f"mks937{mks}.mks937{mks}GaugeEGU")
@@ -247,10 +247,10 @@ def addMPCInterlocks(input_xml):
             arcIonps.append(elem.get("device"))
 
     for ionp in straightIonps:
-        elementList.append(ET.Element("dlsPLC.NX102_interlock",device=f"{ionp}:MPS_ILK",interlock="",port="VLVCC_01_EIP",tag="MPC",tagidx="1"))
+        elementList.append(ET.Element("dlsPLC.NX102_interlock",device=f"{ionp}:MPS_ILK",interlock="",port="VLVCC_01_EIP",tag="MPC",tagidx="1",desc="MPS Interlock"))
 
     for ionp in arcIonps:
-        elementList.append(ET.Element("dlsPLC.NX102_interlock",device=f"{ionp}:MPS_ILK",interlock="",port="VLVCC_01_EIP",tag="MPC",tagidx="2"))
+        elementList.append(ET.Element("dlsPLC.NX102_interlock",device=f"{ionp}:MPS_ILK",interlock="",port="VLVCC_01_EIP",tag="MPC",tagidx="2",desc="MPS Interlock"))
 
 
     root = insertElementList(root,elementList,after="dlsPLC.NX102_readReal")
@@ -325,6 +325,16 @@ def updateAutosave(input_xml):
 
     root = insertElementList(root,[autosave],after="devIocStats.devIocStatsHelper")
     return addXMLBoilerPlate(root)
+
+def addMks937bAddress(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+
+    for elem in root.findall("mks937b.mks937b"):
+        elem.set("address","001")
+
+    return addXMLBoilerPlate(root)
+
 
 
 # Example usage
@@ -414,6 +424,7 @@ converted_xml = sortAsynPort(converted_xml)
 converted_xml = addTerminalServer(converted_xml)
 converted_xml = remove_unwanted_tags(converted_xml,["autosave.Autosave"])
 converted_xml = updateAutosave(converted_xml)
+converted_xml = addMks937bAddress(converted_xml)
 
 
 converted_xml = converted_xml.replace("vxWorks-ppc604_long","linux-x86_64")
