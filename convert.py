@@ -279,8 +279,11 @@ def addPLCIO(input_xml):
 
     elementList.append(ET.Element("dlsPLC.NX102_IRVacuum",P=f"SR{target.cell:02d}-VA-VALVE-01",port="VLVCC_01_EIP"))
 
+    if convertAllmks:
+        root = insertElementList(root,elementList, after = "mks937b.auto_mks937bImgMean")
+    else:
+        root = insertElementList(root,elementList, after = "mks937a.auto_mks937aImgMean")
 
-    root = insertElementList(root,elementList, after = "mks937a.auto_mks937aImgMean")
 
     return addXMLBoilerPlate(root)
 
@@ -303,7 +306,12 @@ def sortAsynPort(input_xml):
     for port in target.asynPorts:
         elementList.append(ET.Element("asyn.AsynIP", name=port,port=target.asynPorts[port]))
 
-    root = insertElementList(root,elementList,after="EPICS_BASE.EpicsEnvSet")
+    if useSrVacCommon:
+        for elem in reversed(elementList):
+            root.insert(0, elem)
+    else:
+        root = insertElementList(root,elementList,after="EPICS_BASE.EpicsEnvSet")
+
     return addXMLBoilerPlate(root)
 
 def addTerminalServer(input_xml):
@@ -364,6 +372,15 @@ def addControllerStatus(input_xml):
     root = insertElementList(root,[controllerStatus],after="FINS.FINSUDPInit")
     return addXMLBoilerPlate(root)
 
+def addSrVacCommon(input_xml):
+    tree = ET.ElementTree(ET.fromstring(input_xml))
+    root = tree.getroot()
+
+    common = ET.Element("SR-VA.common", dom=f"SR{target.cell:02d}C", name="COMMON")
+    root = insertElementList(root,[common],after="FINS.FINSUDPInit")
+    return addXMLBoilerPlate(root)
+
+
 # Example usage
 # inputFileName = "SR06C-VA-IOC-01.xml"
 # outputFilename = inputFileName.replace(".xml", "_converted.xml")
@@ -397,6 +414,9 @@ def addControllerStatus(input_xml):
 
 srVacuumCells = CellCollection()
 target = srVacuumCells.cells[7]
+useSrVacCommon = True
+
+
     # Define unwanted tags
 firstBatchUnwanted = ["mrfTiming.EventReceiverPMC",
                     "ipac.Hy8002",
@@ -433,12 +453,9 @@ converted_xml = remove_unwanted_tags(converted_xml,["dlsPLC.vacValveDebounce"])
 for gauge in target.gaugeConfig:
     converted_xml = addMks937abCombGauge(converted_xml,gauge,target.gaugeConfig[gauge]["mksType"])
 
-
-
 converted_xml = remove_unwanted_tags(converted_xml,["mks937a.mks937aGauge"])
-converted_xml = addEpicsEnvs(converted_xml)
 converted_xml = addMPCInterlocks(converted_xml)
-converted_xml = addPLCIO(converted_xml)
+
 converted_xml = addExtraGaugeControllers(converted_xml)
 convertAllmks = True
 for gauge in target.gaugeConfig:
@@ -446,17 +463,24 @@ for gauge in target.gaugeConfig:
        convertAllmks = False
 
 converted_xml = converted_xml.replace('937a','937b')
-converted_xml = remove_unwanted_tags(converted_xml,["asyn.AsynIP"])
-converted_xml = sortAsynPort(converted_xml)
-converted_xml = addTerminalServer(converted_xml)
 converted_xml = remove_unwanted_tags(converted_xml,["autosave.Autosave"])
 converted_xml = updateAutosave(converted_xml)
 converted_xml = addMks937bAddress(converted_xml)
-converted_xml = addPVLogging(converted_xml)
-converted_xml = addRgaPowerCycle(converted_xml)
-converted_xml = addControllerStatus(converted_xml)
 
+if not useSrVacCommon:
+    converted_xml = addPVLogging(converted_xml)
+    converted_xml = addRgaPowerCycle(converted_xml)
+    converted_xml = addControllerStatus(converted_xml)
+    converted_xml = addTerminalServer(converted_xml)
+    converted_xml = addPLCIO(converted_xml)
+    converted_xml = addEpicsEnvs(converted_xml)
 
+converted_xml = remove_unwanted_tags(converted_xml,["asyn.AsynIP"])
+converted_xml = sortAsynPort(converted_xml)
+
+if useSrVacCommon:
+    converted_xml = remove_unwanted_tags(converted_xml,["autosave.Autosave","devIocStats.devIocStatsHelper"])
+    converted_xml = addSrVacCommon(converted_xml)
 
 converted_xml = converted_xml.replace("vxWorks-ppc604_long","linux-x86_64")
 with open(target.outputFilename, "w") as file:
