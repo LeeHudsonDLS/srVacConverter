@@ -106,7 +106,7 @@ def add_plc_ports(input_xml,after=None):
     elementList = list()
     # Create the new FINS.FINSUDPInit element
     fins_elem = ET.Element("FINS.FINSUDPInit")
-    fins_elem.set("ip", "192.168.5.10")
+    fins_elem.set("ip", f"192.168.{target.cell}.10")
     fins_elem.set("name", "VLVCC_01_FINS")
     fins_elem.set("simulation", "None")
     
